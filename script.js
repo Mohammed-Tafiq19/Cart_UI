@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const subtotalElement = document.getElementById("subtotal");
     const totalElement = document.getElementById("total");
     const checkoutButton = document.querySelector(".checkout-btn");
+    const loader = document.getElementById("loader"); 
 
     let cartData = [];
 
@@ -19,25 +20,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function fetchCartData() {
         cartData = loadCartFromLocalStorage();
-
-        console.log('cartDataFromLocalStorage',cartData)
-
+    
+        
+        loader.style.display = "block";  
+    
         if (cartData.length === 0) {
             try {
                 const response = await fetch("https://cdn.shopify.com/s/files/1/0883/2188/4479/files/apiCartData.json?v=1728384889");
                 const data = await response.json(); 
-                cartData = data.items;
-                console.log('cartDataFromAPI',response.json())
+                cartData = data.items; 
                 saveCartToLocalStorage();
             } catch (error) {
                 console.error("Error fetching cart data:", error);
             }
         }
-
+    
+        
+        loader.style.display = "none";  
+    
         renderCartItems();
     }
-
     
+
+    // Render cart items
     function renderCartItems() {
         cartContainer.innerHTML = "";
         let subtotal = 0;
@@ -47,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemTotal = (item.discounted_price / 100) * item.quantity; 
             subtotal += itemTotal;
 
-            
+            // Create cart item element
             const cartItem = document.createElement("div");
             cartItem.className = "cart-item";
             cartItem.innerHTML = `
@@ -63,16 +68,16 @@ document.addEventListener("DOMContentLoaded", () => {
             cartContainer.appendChild(cartItem);
         });
 
-
+        // Update the subtotal and total elements
         subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
         totalElement.textContent = `₹${subtotal.toFixed(2)}`;
         saveCartToLocalStorage(); 
         addEventListeners();
     }
 
-
+    // Add event listeners
     function addEventListeners() {
-        
+        // Update quantity
         const quantityInputs = document.querySelectorAll(".cart-item input");
         quantityInputs.forEach(input => {
             input.addEventListener("change", (e) => {
@@ -88,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
+        // Remove item
         const removeButtons = document.querySelectorAll(".cart-item .remove-item");
         removeButtons.forEach(button => {
             button.addEventListener("click", (e) => {
@@ -99,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-
+        // Checkout button
         checkoutButton.addEventListener("click", () => {
             if (cartData.length === 0) {
                 alert("Your cart is empty!");
@@ -110,5 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    
     fetchCartData();
 });
